@@ -112,6 +112,56 @@ ports `12181`, `19182` (management API) and `19282` (IDS API).
 Running this sample consists of multiple steps, that are executed one by one and following the same
 order.
 
+All the following steps can also be run using the scripts placed in the [scripts](scripts) folder.
+
+> It is important to note that if you are running all the scripts at once then you would also need to start the Backend service  that runs on port `4000` in addition to provider and consumer as explained in the previous steps. In a new terminal window run the below scripts from the root directory of the project.
+
+```bash
+./gradlew transfer:transfer-06-consumer-pull-http:consumer-pull-backend-service:build
+java -jar transfer/transfer-06-consumer-pull-http/consumer-pull-backend-service/build/libs/consumer-pull-backend-service.jar 
+```
+
+To run the below script navigate to the scripts folder
+```
+cd transfer/transfer-06-consumer-pull-http/scripts/
+```
+Then run the following scripts in the same order as listed below
+For mac
+```
+sh ./01-resigter-data-plane-instance-for-provider.sh
+sh ./02-register-data-plane-instance-for-consumer.sh
+sh ./03-create-asset-on-provider-accepting-request-parameters.sh
+sh ./04-create-policy-on-provider.sh
+sh ./05-create-contract-definition-on-provider.sh
+sh ./06-fetch-catalog-on-consumer.sh
+sh ./07-08-09-initiate-contract-negotiation-and-start-transfer.sh
+```
+
+For Linux
+```
+./01-resigter-data-plane-instance-for-provider.sh
+./02-register-data-plane-instance-for-consumer.sh
+./03-create-asset-on-provider-accepting-request-parameters.sh
+./04-create-policy-on-provider.sh
+./05-create-contract-definition-on-provider.sh
+./06-fetch-catalog-on-consumer.sh
+./07-08-09-initiate-contract-negotiation-and-start-transfer.sh
+```
+
+For Windows
+```
+bash 01-resigter-data-plane-instance-for-provider.sh
+bash 02-register-data-plane-instance-for-consumer.sh
+bash 03-create-asset-on-provider-accepting-request-parameters.sh
+bash 04-create-policy-on-provider.sh
+bash 05-create-contract-definition-on-provider.sh
+bash 06-fetch-catalog-on-consumer.sh
+bash 07-08-09-initiate-contract-negotiation-and-start-transfer.sh
+```
+
+Once the transfer is started, check the status of the transfer as explained in [step 10](#10-check-the-transfer-status) and pull the data as explained in [step 11](#11-pull-the-data)
+
+
 > Please in case you have some issues with the jq option, not that it's not mandatory, and you can
 > drop it from the command. it's just used to format the output, and the same advice should be
 > applied to all calls that use `jq`.
@@ -191,6 +241,32 @@ curl -d '{
 > It is important to note that the `baseUrl` property of the `dataAddress` is a fake data used for
 > the purpose of this example. It will be the data that the consumer will pull on the sample
 > execution.
+
+#### 3.1 Configure an Asset to respond to request parameters
+ 
+ If you want that the asset responds to the request parameters that you add when pulling the data in [step 11](#11-pull-the-data) then create an asset by changing the `dataAddress` as shown in the following script
+
+ ```bash
+curl -d '{
+           "asset": {
+             "properties": {
+               "asset:prop:id": "assetId",
+               "asset:prop:name": "product description",
+               "asset:prop:contenttype": "application/json"
+             }
+           },
+           "dataAddress": {
+             "properties": {
+               "name": "Test asset",
+               "baseUrl": "https://jsonplaceholder.typicode.com/users",
+               "queryParams": "true",
+               "proxyQueryParams": "true",
+               "type": "HttpData"
+             }
+           }
+         }' -H 'content-type: application/json' http://localhost:19193/api/v1/data/assets \
+         -s | jq
+```
 
 ### 4. Create a Policy on the provider
 
